@@ -1,55 +1,72 @@
+import axios from 'axios';
 import { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import login from '../../assets/images/login/login.svg';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import img from '../../assets/images/login/login.svg';
 import { AuthContext } from '../providers/AuthProvider';
+
 const Login = () => {
+
     const { signIn } = useContext(AuthContext);
-    const handleLogin = (e) => {
-        e.preventDefault();
-        const form = e.target;
+    const location = useLocation();
+    const navigate = useNavigate();
+    console.log(location)
+
+    const handleLogin = event => {
+        event.preventDefault();
+        const form = event.target;
         const email = form.email.value;
         const password = form.password.value;
-        console.log(email, password);
+
         signIn(email, password)
             .then(result => {
-                const user = result.user;
-                console.log(user);
-            })
-            .catch(error => {
-                console.log(error);
-            })
-    }
-    return (
-        <div className="min-h-screen hero bg-base-200">
-            <div className="flex-col hero-content lg:flex-row">
-                <div className="w-1/2 text-center lg:text-left">
+                const loggedInUser = result.user;
+                console.log(loggedInUser);
+                const user = { email };
 
-                    <img src={login} alt="" />
+                // get access token
+                axios.post('http://localhost:5000/jwt', user, { withCredentials: true })
+                    .then(res => {
+                        console.log(res.data)
+                        if (res.data.success) {
+                            navigate(location?.state ? location?.state : '/')
+                        }
+                    })
+
+            })
+            .catch(error => console.log(error));
+    }
+
+    return (
+        <div className="hero min-h-screen bg-base-200">
+            <div className="hero-content flex-col lg:flex-row">
+                <div className="w-1/2 mr-12">
+                    <img src={img} alt="" />
                 </div>
-                <div className="flex-shrink-0 w-full max-w-sm shadow-2xl card bg-base-100">
-                    <h1 className="text-3xl font-bold text-center">Login now!</h1>
-                    <form className="card-body" onSubmit={handleLogin}>
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Email</span>
-                            </label>
-                            <input type="email" name='email' placeholder="email" className="input input-bordered" required />
-                        </div>
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text">Password</span>
-                            </label>
-                            <input type="password" placeholder="password" name='password' className="input input-bordered" required />
-                            <label className="label">
-                                <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
-                            </label>
-                        </div>
-                        <div className="mt-6 form-control">
-                            {/* <button className="btn btn-primary">Login</button> */}
-                            <input type='Submit' value='login' className="btn btn-primary" />
-                        </div>
-                    </form>
-                    <p className='my-4 text-center'>create an account? <Link to="/signup" className="text-orange-400">SignUp</Link></p>
+                <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                    <div className="card-body">
+                        <h1 className="text-3xl text-center font-bold">Login</h1>
+                        <form onSubmit={handleLogin}>
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Email</span>
+                                </label>
+                                <input type="text" name='email' placeholder="email" className="input input-bordered" />
+                            </div>
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Password</span>
+                                </label>
+                                <input type="password" name='password' placeholder="password" className="input input-bordered" />
+                                <label className="label">
+                                    <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                </label>
+                            </div>
+                            <div className="form-control mt-6">
+                                <input className="btn btn-primary" type="submit" value="Login" />
+                            </div>
+                        </form>
+                        <p className='my-4 text-center'>New to Car Doctors <Link className='text-orange-600 font-bold' to="/signup">Sign Up</Link> </p>
+                    </div>
                 </div>
             </div>
         </div>
